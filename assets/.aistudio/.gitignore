@@ -1,1 +1,13 @@
-*
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Ensure GitHub Actions workflow directory and file are tracked
+!.github/
+!.github/workflows/
+!.github/workflows/build-and-package.yml
