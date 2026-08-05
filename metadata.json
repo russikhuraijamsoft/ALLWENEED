@@ -1,0 +1,6 @@
+{
+  "name": "All We Need Store ERP",
+  "description": "A production-grade Enterprise Resource Planning (ERP) application containing inventory, POS billing, purchases, accounting, reports, and settings modules.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
