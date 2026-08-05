@@ -2,7 +2,7 @@ name: Build and package apps
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch: {}
 
 jobs:
@@ -70,10 +70,12 @@ jobs:
   android-apk:
     name: Build Android APK (Capacitor)
     runs-on: ubuntu-latest
-    env:
-      ANDROID_HOME: ${{ runner.temp }}/android-sdk
-      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
     steps:
+      - name: Set Android SDK Environment Variables
+        run: |
+          echo "ANDROID_HOME=${{ runner.temp }}/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=${{ runner.temp }}/android-sdk" >> $GITHUB_ENV
+
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -97,6 +99,12 @@ jobs:
       - name: Install Java
         uses: actions/setup-java@v4
         with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Android SDK commandline tools
+        run: |
+          sudo apt-get update        with:
           distribution: 'temurin'
           java-version: '17'
 
