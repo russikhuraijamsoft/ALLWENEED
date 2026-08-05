@@ -1,0 +1,6 @@
+{
+  "appId": "com.yourdomain.allweneed",
+  "appName": "ALLWENEED",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

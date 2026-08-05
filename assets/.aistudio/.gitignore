@@ -1,1 +1,13 @@
-*
+# AI Studio ignore — keep only common temp files ignored
+# Avoid ignoring everything in this folder (single '*' hides all files)
+*.log
+tmp/
+cache/
+*.tmp
+.DS_Store
+.idea/
+.vscode/
+
+# If you need to keep specific files in this directory, add negate patterns
+# e.g. to keep README.md:
+# !README.md
