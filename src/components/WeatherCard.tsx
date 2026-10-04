@@ -1,6 +1,25 @@
 import React from 'react';
 
-function weatherCodeToEmoji(code: number) {
+interface Forecast {
+  latitude: number;
+  longitude: number;
+  timezone: string;
+  current_weather?: {
+    temperature: number;
+    windspeed: number;
+    winddirection: number;
+    weathercode: number;
+    time: string;
+  };
+  daily?: {
+    time: string[];
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    weathercode: number[];
+  };
+}
+
+function weatherCodeToEmoji(code: number): string {
   // Simplified mapping from Open-Meteo weathercode
   if (code === 0) return '☀️ Clear';
   if (code === 1 || code === 2 || code === 3) return '⛅ Partly Cloudy';
@@ -10,42 +29,50 @@ function weatherCodeToEmoji(code: number) {
   if (code >= 80 && code <= 82) return '🌧️ Rain showers';
   if (code >= 85 && code <= 86) return '❄️ Heavy snow';
   if (code >= 95 && code <= 99) return '⛈️ Thunderstorm';
-  return '🌈';
+  return '🌈 Unknown';
 }
 
-export default function WeatherCard({ forecast }: { forecast: any }) {
+interface WeatherCardProps {
+  forecast: Forecast;
+}
+
+export default function WeatherCard({ forecast }: WeatherCardProps) {
   const current = forecast.current_weather;
   const daily = forecast.daily;
 
+  if (!current) {
+    return <div className="card">No current weather available.</div>;
+  }
+
   return (
     <div className="card">
-      {current ? (
-        <div className="current">
-          <div className="current-left">
-            <div className="temp">{Math.round(current.temperature)}°C</div>
-            <div className="desc">{weatherCodeToEmoji(current.weathercode)}</div>
-          </div>
-          <div className="current-right">
-            <div>Wind: {Math.round(current.windspeed)} km/h</div>
-            <div>Direction: {Math.round(current.winddirection)}°</div>
-            <div>Time: {new Date(current.time).toLocaleString()}</div>
-          </div>
+      <div className="current">
+        <div className="current-left">
+          <div className="temp">{Math.round(current.temperature)}°C</div>
+          <div className="desc">{weatherCodeToEmoji(current.weathercode)}</div>
         </div>
-      ) : (
-        <div>No current weather available.</div>
-      )}
+        <div className="current-right">
+          <div>Wind: {Math.round(current.windspeed)} km/h</div>
+          <div>Direction: {Math.round(current.winddirection)}°</div>
+          <div>Time: {new Date(current.time).toLocaleString()}</div>
+        </div>
+      </div>
 
-      {daily ? (
+      {daily && daily.time.length > 0 ? (
         <div className="daily">
           <h3>7-day forecast</h3>
           <div className="daily-grid">
             {daily.time.map((t: string, i: number) => (
-              <div key={t} className="day">
-                <div className="day-date">{new Date(t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</div>
-                <div className="day-emoji">{weatherCodeToEmoji(daily.weathercode[i] ?? 0)}</div>
+              <div key={`forecast-${t}`} className="day">
+                <div className="day-date">
+                  {new Date(t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}
+                </div>
+                <div className="day-emoji">
+                  {weatherCodeToEmoji(daily.weathercode?.[i] ?? 0)}
+                </div>
                 <div className="day-temp">
-                  <span className="max">{Math.round(daily.temperature_2m_max[i])}°</span>
-                  <span className="min">{Math.round(daily.temperature_2m_min[i])}°</span>
+                  <span className="max">{Math.round(daily.temperature_2m_max?.[i] ?? 0)}°</span>
+                  <span className="min">{Math.round(daily.temperature_2m_min?.[i] ?? 0)}°</span>
                 </div>
               </div>
             ))}
