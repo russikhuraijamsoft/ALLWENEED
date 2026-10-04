@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import WeatherCard from './WeatherCard';
 
-type GeoResult = {
+interface GeoResult {
   name: string;
   country?: string;
   latitude: number;
   longitude: number;
   timezone?: string;
-};
+}
 
-type Forecast = {
+interface Forecast {
   latitude: number;
   longitude: number;
   timezone: string;
@@ -26,7 +26,7 @@ type Forecast = {
     temperature_2m_min: number[];
     weathercode: number[];
   };
-};
+}
 
 export default function WeatherDashboard() {
   const [query, setQuery] = useState('');
@@ -37,7 +37,12 @@ export default function WeatherDashboard() {
   const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
   async function searchLocation() {
-    if (!query.trim()) return;
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      setError('Please enter a city name');
+      return;
+    }
+
     setError(null);
     setLoading(true);
     setSuggestions([]);
@@ -45,16 +50,22 @@ export default function WeatherDashboard() {
 
     try {
       const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-        query
+        trimmedQuery
       )}&count=5&language=en&format=json`;
+      
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Geocoding failed');
+      if (!res.ok) {
+        throw new Error(`Geocoding API error: ${res.status}`);
+      }
+      
       const data = await res.json();
+      
       if (!data.results || data.results.length === 0) {
-        setError('No locations found.');
+        setError('No locations found. Try a different city name.');
         setLoading(false);
         return;
       }
+      
       const results: GeoResult[] = data.results.map((r: any) => ({
         name: r.name,
         country: r.country,
@@ -62,9 +73,11 @@ export default function WeatherDashboard() {
         longitude: r.longitude,
         timezone: r.timezone,
       }));
+      
       setSuggestions(results);
     } catch (err: any) {
-      setError(err.message || 'Search failed');
+      console.error('Search error:', err);
+      setError(err.message || 'Failed to search locations. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -87,13 +100,20 @@ export default function WeatherDashboard() {
         timezone: 'auto',
         daily: ['temperature_2m_max', 'temperature_2m_min', 'weathercode'].join(','),
       });
+      
       const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Weather fetch failed');
+      
+      if (!res.ok) {
+        throw new Error(`Weather API error: ${res.status}`);
+      }
+      
       const data = await res.json();
       setForecast(data);
     } catch (err: any) {
-      setError(err.message || 'Forecast failed');
+      console.error('Forecast error:', err);
+      setError(err.message || 'Failed to fetch weather forecast. Please try again.');
+      setLocationLabel(null);
     } finally {
       setLoading(false);
     }
@@ -104,15 +124,19 @@ export default function WeatherDashboard() {
       <div className="search">
         <input
           aria-label="Search city"
+          type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') searchLocation();
+            if (e.key === 'Enter') {
+              searchLocation();
+            }
           }}
           placeholder="Search city (e.g., London, Tokyo)"
+          disabled={loading}
         />
         <button onClick={searchLocation} disabled={loading}>
-          Search
+          {loading ? 'Searching…' : 'Search'}
         </button>
       </div>
 
@@ -123,8 +147,8 @@ export default function WeatherDashboard() {
         <div className="suggestions">
           <h3>Choose location</h3>
           <ul>
-            {suggestions.map((s, i) => (
-              <li key={i}>
+            {suggestions.map((s) => (
+              <li key={`${s.latitude}-${s.longitude}`}>
                 <button className="link-button" onClick={() => pickLocation(s)}>
                   {s.name}
                   {s.country ? `, ${s.country}` : ''} — {s.latitude.toFixed(2)}, {s.longitude.toFixed(2)}
