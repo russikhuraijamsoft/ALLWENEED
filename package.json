@@ -45,7 +45,7 @@
     "cross-env": "^7.0.3",
     "electron": "^26.2.0",
     "electron-builder": "^24.7.0",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.2",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
